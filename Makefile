@@ -86,6 +86,13 @@ all:
 	# *** LOG OUT and log back in to ensure your environment is properly initialized! ***
 	#
 
+#steps to run before installing on a docker image
+dockerinit:
+	sudo chmod 1777 /tmp/
+	sudo addgroup fuse
+	sudo umount /etc/hosts
+	echo "$(IP) GMS_HOST" | setup/bin/findreplace-gms | sudo bash -c 'cat - >>/etc/hosts' 1>/dev/null 2>&1
+
 # in a VM environment, the staging occurs on the host, and the rest on the VM
 vm: vminit
 	#
@@ -538,6 +545,7 @@ done-host/db-init: done-host/pkgs
 	# 
 	# setup the database and user "genome"
 	sudo -v
+	sudo /etc/init.d/postgresql restart
 	sudo -u postgres /usr/bin/createuser -A -D -R -E genome || echo 
 	sudo -u postgres /usr/bin/createdb -T template0 -O genome genome || echo 
 	sudo -u postgres /usr/bin/psql postgres -tAc "ALTER USER \"genome\" WITH PASSWORD 'changeme'"
